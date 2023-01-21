@@ -55,7 +55,6 @@ function evalulate(expression: Token, data: DataType): DataType {
                     let seperator: DataType = ' ';
                     if (func.children.length > 1 && func.children[0].children.length > 0) seperator = evalulate(func.children[1].children[0], structuredClone(data))
                     if (typeof seperator !== 'string') throw new Error("Cant join with none string seperator")
-                    console.log("🚀 ~ file: query.ts:67 ~ functionEval ~ seperator", `'${seperator}'`)
                     return data.filter(d => typeof d === 'string').join(seperator)
                 }
             case 'multiply':
