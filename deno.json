@@ -1,0 +1,12 @@
+{
+    "tasks": {
+        "test": "deno test --allow-read",
+        "test:watch": "deno test --allow-read --watch",
+        "compile": "deno compile --allow-read --output jsonQuery .\\src\\query.ts"
+    },
+    "test": {
+        "files": {
+            "include": ["tests/query.test.ts"]
+        }
+    }
+}

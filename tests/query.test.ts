@@ -1,10 +1,13 @@
 import { assertEquals } from "https://deno.land/std/testing/asserts.ts"
-import { createTokenizer, Float, Int, interpret, parse, StringLiteral, String, Identifier, Expression, Function, FunctionArguments, Atom, Boolean, Maybe, Choice, SequenceOf, ZeroOrMore, BetterTrim } from './query.ts'
+import { interpret } from "../src/intepreter.ts"
+import { Identifier, ZeroOrMore, Boolean, String, StringLiteral, Int, Float, Atom, Maybe, SequenceOf, FunctionArguments, Choice, parse, Expression, Function } from "../src/parser.ts"
+import { createTokenizer } from "../src/tokenizer.ts"
+import { trimCitation } from "../src/util.ts"
 
 try {
-    const text1 = await Deno.readTextFile('./test.json')
-    const text2 = await Deno.readTextFile('./test2.json')
-    const text3 = await Deno.readTextFile('./test3.json')
+    const text1 = await Deno.readTextFile('./tests/test.json')
+    const text2 = await Deno.readTextFile('./tests/test2.json')
+    const text3 = await Deno.readTextFile('./tests/test3.json')
 
 
     Deno.test('combinators int', () => {
@@ -212,18 +215,18 @@ try {
     })
 
     Deno.test('combinators function', () => {
-        assertEquals(Function(createTokenizer('$s,trueum')), {
-            raw: '$s', idx: 0, type: 'function', children: [
+        assertEquals(Function(createTokenizer('>s,trueum')), {
+            raw: '>s', idx: 0, type: 'function', children: [
                 { type: 'identifier', raw: 's', idx: 1, children: [] }
             ]
         })
-        assertEquals(Function(createTokenizer('$s()')), {
-            raw: '$s()', idx: 0, type: 'function', children: [
+        assertEquals(Function(createTokenizer('>s()')), {
+            raw: '>s()', idx: 0, type: 'function', children: [
                 { type: 'identifier', raw: 's', idx: 1, children: [] }
             ]
         })
-        assertEquals(Function(createTokenizer('$s(arg1)')), {
-            type: 'function', raw: '$s(arg1)', idx: 0, children: [
+        assertEquals(Function(createTokenizer('>s(arg1)')), {
+            type: 'function', raw: '>s(arg1)', idx: 0, children: [
                 { type: 'identifier', raw: 's', idx: 1, children: [] },
                 {
                     type: 'arguments', raw: '(arg1)', idx: 2, children: [
@@ -236,7 +239,7 @@ try {
                 }
             ]
         })
-        assertEquals(Function(createTokenizer('$1231s,trueum(arg1,"yolo")')), null)
+        assertEquals(Function(createTokenizer('>1231s,trueum(arg1,"yolo")')), null)
         assertEquals(Function(createTokenizer('234sdfsdfss')), null)
         assertEquals(Function(createTokenizer('"h,trueello')), null)
         assertEquals(Function(createTokenizer('-h,true"ello"')), null)
@@ -277,12 +280,12 @@ try {
         })
     })
     Deno.test('test parsing simple function', () => {
-        assertEquals(parse('profile.nestedList.$sum'), {
-            type: 'expression', raw: 'profile.nestedList.$sum', idx: 0, children: [
+        assertEquals(parse('profile.nestedList.>sum'), {
+            type: 'expression', raw: 'profile.nestedList.>sum', idx: 0, children: [
                 { type: 'identifier', raw: 'profile', idx: 0, children: [] },
                 { type: 'identifier', raw: 'nestedList', idx: 8, children: [] },
                 {
-                    type: 'function', raw: '$sum', idx: 19, children: [
+                    type: 'function', raw: '>sum', idx: 19, children: [
                         { type: 'identifier', raw: 'sum', idx: 20, children: [] }
                     ]
                 }
@@ -290,11 +293,11 @@ try {
         })
     })
     Deno.test('test parsing function with argumment', () => {
-        assertEquals(parse('roles.$join(" ")'), {
-            type: 'expression', raw: 'roles.$join(" ")', idx: 0, children: [
+        assertEquals(parse('roles.>join(" ")'), {
+            type: 'expression', raw: 'roles.>join(" ")', idx: 0, children: [
                 { type: 'identifier', raw: 'roles', idx: 0, children: [] },
                 {
-                    type: 'function', raw: '$join(" ")', idx: 6, children: [
+                    type: 'function', raw: '>join(" ")', idx: 6, children: [
                         { type: 'identifier', raw: 'join', idx: 7, children: [] },
                         {
                             type: 'arguments', raw: '(" ")', idx: 11, children: [
@@ -307,28 +310,32 @@ try {
         })
     })
     Deno.test('test parsing function with multiple arguments', () => {
-        assertEquals(parse('Account.Order.Product.$multiply(Price,Quantity).$sum'), {
-            type: 'expression', raw: 'Account.Order.Product.$multiply(Price,Quantity).$sum', idx: 0, children: [
+        assertEquals(parse('Account.Order.Product.>multiply(Price,Quantity).>sum'), {
+            type: 'expression', raw: 'Account.Order.Product.>multiply(Price,Quantity).>sum', idx: 0, children: [
                 { type: 'identifier', raw: 'Account', idx: 0, children: [] },
                 { type: 'identifier', raw: 'Order', idx: 8, children: [] },
                 { type: 'identifier', raw: 'Product', idx: 14, children: [] },
                 {
-                    type: 'function', raw: '$multiply(Price,Quantity)', idx: 22, children: [
+                    type: 'function', raw: '>multiply(Price,Quantity)', idx: 22, children: [
                         { type: 'identifier', raw: 'multiply', idx: 23, children: [] },
                         {
                             type: 'arguments', raw: '(Price,Quantity)', idx: 31, children: [
-                                {type: 'expression', raw: 'Price', idx: 32, children: [
-                                    { type: 'identifier', raw: 'Price', idx: 32, children: [] }
-                                ]},
-                                {type: 'expression', raw: 'Quantity', idx: 38, children: [
-                                    { type: 'identifier', raw: 'Quantity', idx: 38, children: [] }
-                                ]}
+                                {
+                                    type: 'expression', raw: 'Price', idx: 32, children: [
+                                        { type: 'identifier', raw: 'Price', idx: 32, children: [] }
+                                    ]
+                                },
+                                {
+                                    type: 'expression', raw: 'Quantity', idx: 38, children: [
+                                        { type: 'identifier', raw: 'Quantity', idx: 38, children: [] }
+                                    ]
+                                }
                             ]
                         }
                     ]
                 },
                 {
-                    type: 'function', raw: '$sum', idx: 48, children: [
+                    type: 'function', raw: '>sum', idx: 48, children: [
                         { type: 'identifier', raw: 'sum', idx: 49, children: [] }
                     ]
                 }
@@ -337,26 +344,28 @@ try {
     })
 
     Deno.test('test parsing function with multiple arguments where one arg is string with comma', () => {
-        assertEquals(parse('Account.Order.Product.$concat(Price,",").$join'), {
-            type: 'expression', raw: 'Account.Order.Product.$concat(Price,",").$join', idx: 0, children: [
+        assertEquals(parse('Account.Order.Product.>concat(Price,",").>join'), {
+            type: 'expression', raw: 'Account.Order.Product.>concat(Price,",").>join', idx: 0, children: [
                 { type: 'identifier', raw: 'Account', idx: 0, children: [] },
                 { type: 'identifier', raw: 'Order', idx: 8, children: [] },
                 { type: 'identifier', raw: 'Product', idx: 14, children: [] },
                 {
-                    type: 'function', raw: '$concat(Price,",")', idx: 22, children: [
+                    type: 'function', raw: '>concat(Price,",")', idx: 22, children: [
                         { type: 'identifier', raw: 'concat', idx: 23, children: [] },
                         {
                             type: 'arguments', raw: '(Price,",")', idx: 29, children: [
-                                { type: 'expression', raw: 'Price', idx: 30, children: [
-                                    { type: 'identifier', raw: 'Price', idx: 30, children: [] }
-                                ]},
+                                {
+                                    type: 'expression', raw: 'Price', idx: 30, children: [
+                                        { type: 'identifier', raw: 'Price', idx: 30, children: [] }
+                                    ]
+                                },
                                 { type: 'string', raw: '","', idx: 36, children: [] },
                             ]
                         }
                     ]
                 },
                 {
-                    type: 'function', raw: '$join', idx: 41, children: [
+                    type: 'function', raw: '>join', idx: 41, children: [
                         { type: 'identifier', raw: 'join', idx: 42, children: [] }
                     ]
                 }
@@ -365,71 +374,71 @@ try {
     })
 
     Deno.test('intepret minimum', () => {
-        assertEquals(interpret('name', text3), '"Copeland Rogers"')
+        assertEquals(interpret('name', text3), "Copeland Rogers")
     })
 
     Deno.test('intepret minimum chaining', () => {
-        assertEquals(interpret('location.lat', text3), '68.279554')
+        assertEquals(interpret('location.lat', text3), 68.279554)
     })
 
     Deno.test('intepret profile.location.lat', () => {
-        assertEquals(interpret('profile.location.lat', text1), '[68.279554,80.520788,36.387318,-36.095195,80.257117,42.492128,-5.886025,-24.504043,20.122613]')
+        assertEquals(interpret('profile.location.lat', text1), [68.279554, 80.520788, 36.387318, -36.095195, 80.257117, 42.492128, -5.886025, -24.504043, 20.122613])
     })
 
     Deno.test('intepret profile.nestedList', () => {
-        assertEquals(interpret('profile.nestedList', text1), '[[26,52,43,22,78,84,72,11,62],[37,79,3,26,71,20],[53,30,66,67,16],[99,85,55,99,64,60,12,42,40,21],[99,33,75,88,92,25,12,63,91],[49,78,13,46,7,0,79,66,18,95],[94,47,19,19,79],[98,87,82,43,68,41,33,99,34,45],[82,43,33,27,46,60,35,76]]')
+        assertEquals(interpret('profile.nestedList', text1), [[26, 52, 43, 22, 78, 84, 72, 11, 62], [37, 79, 3, 26, 71, 20], [53, 30, 66, 67, 16], [99, 85, 55, 99, 64, 60, 12, 42, 40, 21], [99, 33, 75, 88, 92, 25, 12, 63, 91], [49, 78, 13, 46, 7, 0, 79, 66, 18, 95], [94, 47, 19, 19, 79], [98, 87, 82, 43, 68, 41, 33, 99, 34, 45], [82, 43, 33, 27, 46, 60, 35, 76]])
     })
 
-    Deno.test('intepret profile.nestedList.*.$add', () => {
-        assertEquals(interpret('profile.nestedList.*.$add', text1), '3814')
+    Deno.test('intepret profile.nestedList.*.>add', () => {
+        assertEquals(interpret('profile.nestedList.*.>add', text1), 3814)
     })
 
     Deno.test('BetterTrim', () => {
-        assertEquals(BetterTrim('"','"'), '')
-        assertEquals(BetterTrim('"'), '')
-        assertEquals(BetterTrim('"123','"'), '123')
-        assertEquals(BetterTrim('"test"','"'), 'test')
-        assertEquals(BetterTrim('""','"'), '')
+        assertEquals(trimCitation('"'), '')
+        assertEquals(trimCitation('"'), '')
+        assertEquals(trimCitation('"123'), '123')
+        assertEquals(trimCitation('"test"'), 'test')
+        assertEquals(trimCitation('""'), '')
     })
 
-    Deno.test('intepret roles.*.$join(" ")', () => {
-        assertEquals(interpret('roles.*.$join(" ")', text1), '"guest guest owner owner admin guest member owner guest admin guest owner member owner admin"')
+    Deno.test('intepret roles.*.>join(" ")', () => {
+        assertEquals(interpret('roles.*.>join(" ")', text1), 'guest guest owner owner admin guest member owner guest admin guest owner member owner admin')
     })
 
     Deno.test('intepret Account', () => {
-        assertEquals(interpret('Account', text2), '{"Account Name":"Firefly","Order":[{"OrderID":"order103","Product":[{"Product Name":"Bowler Hat","ProductID":858383,"SKU":"0406654608","Description":{"Colour":"Purple","Width":300,"Height":200,"Depth":210,"Weight":0.75},"Price":34.45,"Quantity":2},{"Product Name":"Trilby hat","ProductID":858236,"SKU":"0406634348","Description":{"Colour":"Orange","Width":300,"Height":200,"Depth":210,"Weight":0.6},"Price":21.67,"Quantity":1}]},{"OrderID":"order104","Product":[{"Product Name":"Bowler Hat","ProductID":858383,"SKU":"040657863","Description":{"Colour":"Purple","Width":300,"Height":200,"Depth":210,"Weight":0.75},"Price":34.45,"Quantity":4},{"ProductID":345664,"SKU":"0406654603","Product Name":"Cloak","Description":{"Colour":"Black","Width":30,"Height":20,"Depth":210,"Weight":2},"Price":107.99,"Quantity":1}]}]}')
+        assertEquals(interpret('Account', text2), { "Account Name": "Firefly", "Order": [{ "OrderID": "order103", "Product": [{ "Product Name": "Bowler Hat", "ProductID": 858383, "SKU": "0406654608", "Description": { "Colour": "Purple", "Width": 300, "Height": 200, "Depth": 210, "Weight": 0.75 }, "Price": 34.45, "Quantity": 2 }, { "Product Name": "Trilby hat", "ProductID": 858236, "SKU": "0406634348", "Description": { "Colour": "Orange", "Width": 300, "Height": 200, "Depth": 210, "Weight": 0.6 }, "Price": 21.67, "Quantity": 1 }] }, { "OrderID": "order104", "Product": [{ "Product Name": "Bowler Hat", "ProductID": 858383, "SKU": "040657863", "Description": { "Colour": "Purple", "Width": 300, "Height": 200, "Depth": 210, "Weight": 0.75 }, "Price": 34.45, "Quantity": 4 }, { "ProductID": 345664, "SKU": "0406654603", "Product Name": "Cloak", "Description": { "Colour": "Black", "Width": 30, "Height": 20, "Depth": 210, "Weight": 2 }, "Price": 107.99, "Quantity": 1 }] }] })
     })
 
     Deno.test('intepret Account.Order', () => {
-        assertEquals(interpret('Account.Order', text2), '[{"OrderID":"order103","Product":[{"Product Name":"Bowler Hat","ProductID":858383,"SKU":"0406654608","Description":{"Colour":"Purple","Width":300,"Height":200,"Depth":210,"Weight":0.75},"Price":34.45,"Quantity":2},{"Product Name":"Trilby hat","ProductID":858236,"SKU":"0406634348","Description":{"Colour":"Orange","Width":300,"Height":200,"Depth":210,"Weight":0.6},"Price":21.67,"Quantity":1}]},{"OrderID":"order104","Product":[{"Product Name":"Bowler Hat","ProductID":858383,"SKU":"040657863","Description":{"Colour":"Purple","Width":300,"Height":200,"Depth":210,"Weight":0.75},"Price":34.45,"Quantity":4},{"ProductID":345664,"SKU":"0406654603","Product Name":"Cloak","Description":{"Colour":"Black","Width":30,"Height":20,"Depth":210,"Weight":2},"Price":107.99,"Quantity":1}]}]')
+        assertEquals(interpret('Account.Order', text2), [{ "OrderID": "order103", "Product": [{ "Product Name": "Bowler Hat", "ProductID": 858383, "SKU": "0406654608", "Description": { "Colour": "Purple", "Width": 300, "Height": 200, "Depth": 210, "Weight": 0.75 }, "Price": 34.45, "Quantity": 2 }, { "Product Name": "Trilby hat", "ProductID": 858236, "SKU": "0406634348", "Description": { "Colour": "Orange", "Width": 300, "Height": 200, "Depth": 210, "Weight": 0.6 }, "Price": 21.67, "Quantity": 1 }] }, { "OrderID": "order104", "Product": [{ "Product Name": "Bowler Hat", "ProductID": 858383, "SKU": "040657863", "Description": { "Colour": "Purple", "Width": 300, "Height": 200, "Depth": 210, "Weight": 0.75 }, "Price": 34.45, "Quantity": 4 }, { "ProductID": 345664, "SKU": "0406654603", "Product Name": "Cloak", "Description": { "Colour": "Black", "Width": 30, "Height": 20, "Depth": 210, "Weight": 2 }, "Price": 107.99, "Quantity": 1 }] }])
     })
 
     Deno.test('intepret Account.Order.Product', () => {
-        assertEquals(interpret('Account.Order.Product', text2), '[[{"Product Name":"Bowler Hat","ProductID":858383,"SKU":"0406654608","Description":{"Colour":"Purple","Width":300,"Height":200,"Depth":210,"Weight":0.75},"Price":34.45,"Quantity":2},{"Product Name":"Trilby hat","ProductID":858236,"SKU":"0406634348","Description":{"Colour":"Orange","Width":300,"Height":200,"Depth":210,"Weight":0.6},"Price":21.67,"Quantity":1}],[{"Product Name":"Bowler Hat","ProductID":858383,"SKU":"040657863","Description":{"Colour":"Purple","Width":300,"Height":200,"Depth":210,"Weight":0.75},"Price":34.45,"Quantity":4},{"ProductID":345664,"SKU":"0406654603","Product Name":"Cloak","Description":{"Colour":"Black","Width":30,"Height":20,"Depth":210,"Weight":2},"Price":107.99,"Quantity":1}]]')
+        assertEquals(interpret('Account.Order.Product', text2), [[{ "Product Name": "Bowler Hat", "ProductID": 858383, "SKU": "0406654608", "Description": { "Colour": "Purple", "Width": 300, "Height": 200, "Depth": 210, "Weight": 0.75 }, "Price": 34.45, "Quantity": 2 }, { "Product Name": "Trilby hat", "ProductID": 858236, "SKU": "0406634348", "Description": { "Colour": "Orange", "Width": 300, "Height": 200, "Depth": 210, "Weight": 0.6 }, "Price": 21.67, "Quantity": 1 }], [{ "Product Name": "Bowler Hat", "ProductID": 858383, "SKU": "040657863", "Description": { "Colour": "Purple", "Width": 300, "Height": 200, "Depth": 210, "Weight": 0.75 }, "Price": 34.45, "Quantity": 4 }, { "ProductID": 345664, "SKU": "0406654603", "Product Name": "Cloak", "Description": { "Colour": "Black", "Width": 30, "Height": 20, "Depth": 210, "Weight": 2 }, "Price": 107.99, "Quantity": 1 }]])
     })
 
     Deno.test('intepret Account.Order.Product.*', () => {
-        assertEquals(interpret('Account.Order.*.Product.*', text2), '[{"Product Name":"Bowler Hat","ProductID":858383,"SKU":"0406654608","Description":{"Colour":"Purple","Width":300,"Height":200,"Depth":210,"Weight":0.75},"Price":34.45,"Quantity":2},{"Product Name":"Trilby hat","ProductID":858236,"SKU":"0406634348","Description":{"Colour":"Orange","Width":300,"Height":200,"Depth":210,"Weight":0.6},"Price":21.67,"Quantity":1},{"Product Name":"Bowler Hat","ProductID":858383,"SKU":"040657863","Description":{"Colour":"Purple","Width":300,"Height":200,"Depth":210,"Weight":0.75},"Price":34.45,"Quantity":4},{"ProductID":345664,"SKU":"0406654603","Product Name":"Cloak","Description":{"Colour":"Black","Width":30,"Height":20,"Depth":210,"Weight":2},"Price":107.99,"Quantity":1}]')
+        assertEquals(interpret('Account.Order.*.Product.*', text2), [{ "Product Name": "Bowler Hat", "ProductID": 858383, "SKU": "0406654608", "Description": { "Colour": "Purple", "Width": 300, "Height": 200, "Depth": 210, "Weight": 0.75 }, "Price": 34.45, "Quantity": 2 }, { "Product Name": "Trilby hat", "ProductID": 858236, "SKU": "0406634348", "Description": { "Colour": "Orange", "Width": 300, "Height": 200, "Depth": 210, "Weight": 0.6 }, "Price": 21.67, "Quantity": 1 }, { "Product Name": "Bowler Hat", "ProductID": 858383, "SKU": "040657863", "Description": { "Colour": "Purple", "Width": 300, "Height": 200, "Depth": 210, "Weight": 0.75 }, "Price": 34.45, "Quantity": 4 }, { "ProductID": 345664, "SKU": "0406654603", "Product Name": "Cloak", "Description": { "Colour": "Black", "Width": 30, "Height": 20, "Depth": 210, "Weight": 2 }, "Price": 107.99, "Quantity": 1 }])
     })
 
-    Deno.test('intepret Account.Order.Product.*.$multiply(Price,Quantity)', () => {
-        assertEquals(interpret('Account.Order.*.Product.*.$multiply(Price,Quantity)', text2), '[68.9,21.67,137.8,107.99]')
+    Deno.test('intepret Account.Order.Product.*.>multiply(Price,Quantity)', () => {
+        assertEquals(interpret('Account.Order.*.Product.*.>multiply(Price,Quantity)', text2), [68.9, 21.67, 137.8, 107.99])
     })
 
-    Deno.test('intepret Account.Order.Product.*.$multiply(Price,Quantity).$add', () => {
-        assertEquals(interpret('Account.Order.*.Product.*.$multiply(Price,Quantity).$add', text2), '336.36')
+    Deno.test('intepret Account.Order.Product.*.>multiply(Price,Quantity).>add', () => {
+        assertEquals(interpret('Account.Order.*.Product.*.>multiply(Price,Quantity).>add', text2), 336.36)
     })
 
-    Deno.test('intepret Account.Order.Product.*.$add(Price,Quantity).$add', () => {
-        assertEquals(interpret('Account.Order.*.Product.*.$add(Price,Quantity).$add', text2), '206.56')
+    Deno.test('intepret Account.Order.Product.*.>add(Price,Quantity).>add', () => {
+        assertEquals(interpret('Account.Order.*.Product.*.>add(Price,Quantity).>add', text2), 206.56)
     })
 
-    Deno.test('intepret Account.Order.Product.*.$add(Price,50)', () => {
-        assertEquals(interpret('Account.Order.*.Product.*.$add(Price,50)', text2), '[84.45,71.67,84.45,157.99]')
+    Deno.test('intepret Account.Order.Product.*.>add(Price,50)', () => {
+        assertEquals(interpret('Account.Order.*.Product.*.>add(Price,50)', text2), [84.45, 71.67, 84.45, 157.99])
     })
 
-    Deno.test('intepret $add(10,20)', () => {
-        assertEquals(interpret('$add(10,20)', text2), '30')
+    Deno.test('intepret >add(10,20)', () => {
+        assertEquals(interpret('>add(10,20)', text2), 30)
     })
 } catch (e) {
     console.error(e)
