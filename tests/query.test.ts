@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std/testing/asserts.ts"
+import { assertEquals } from "https://deno.land/std@0.172.0/testing/asserts.ts"
 import { interpret } from "../src/intepreter.ts"
 import { Identifier, ZeroOrMore, Boolean, String, StringLiteral, Int, Float, Atom, Maybe, SequenceOf, FunctionArguments, Choice, parse, Expression, Function } from "../src/parser.ts"
 import { createTokenizer } from "../src/tokenizer.ts"
