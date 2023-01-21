@@ -173,7 +173,7 @@ const String = (tokenizer: Tokenizer): Token | null => {
 
 const Identifier = (tokenizer: Tokenizer): Token | null => {
     const mark = tokenizer.mark('Identifier')
-    const letters = 'abcdefghijklmnopqrstuvwxyzåäö'
+    const letters = 'abcdefghijklmnopqrstuvwxyz'
     const validStarters = letters + letters.toUpperCase() + '_'
     const validBody = validStarters + '0123456789'
     const starter = AnyOfString(tokenizer, validStarters)
