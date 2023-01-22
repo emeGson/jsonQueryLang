@@ -1,0 +1,47 @@
+[
+    {
+        "name": "Bob",
+        "age": 34,
+        "weight": 54,
+        "salary": 20000,
+        "roles": [
+            "chef",
+            "manager"
+        ],
+        "children": [
+            {
+                "name": "Bob jr",
+                "age": 6
+            },
+            {
+                "name": "Bobina jr",
+                "age": 10
+            }
+        ],
+        "education":{
+            "school": "nice school",
+            "level": "phd"
+        }
+    },
+    {
+        "name": "Alice",
+        "age": 25,
+        "weight": 43,
+        "salary": 25000,
+        "roles": [
+            "owner",
+            "waiter"
+        ],
+        "children": [
+            {
+                "name": "Alice the small",
+                "age": 3
+            }
+        ],
+        "education":{
+            "school": "even nicer school",
+            "level": "candidate",
+            "years": 5
+        }
+    }
+]
