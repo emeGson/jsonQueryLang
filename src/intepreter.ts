@@ -10,19 +10,19 @@ function interpret(exp: string, data: string): DataType {
 }
 
 function evalulate(expression: Token, data: DataType): DataType {
-    const mathFuncAgainstData = (data: DataType, operation: (a: number, b: number) => number, name: string) => {
+    const mathFuncAgainstData = (data: DataType, operation: (a: number, b: number) => number, name: string, initial = 0) => {
         if (typeof data === 'number') return data
         if (typeof data === 'string') throw new Error(`Cant ${name} string type`)
         if (typeof data === 'boolean') throw new Error(`Cant ${name} string type`)
         if (data === null) throw new Error(`Cant ${name} null`)
-        if (Array.isArray(data)) return data.filter(d => typeof d === 'number').reduce((prev, curr) => operation((prev as number), (curr as number)), 0)
-        return Object.values(data).filter(d => typeof d === 'number').reduce((prev, curr) => operation((prev as number), (curr as number)), 0)
+        if (Array.isArray(data)) return data.filter(d => typeof d === 'number').reduce((prev, curr) => operation((prev as number), (curr as number)), initial)
+        return Object.values(data).filter(d => typeof d === 'number').reduce((prev, curr) => operation((prev as number), (curr as number)), initial)
     }
-    const mathFuncAgainstArgs = (func: Token, data: DataType, operation: (a: number, b: number) => number, name: string) => {
+    const mathFuncAgainstArgs = (func: Token, data: DataType, operation: (a: number, b: number) => number, name: string, initial = 0) => {
         const evaluatedArgs = argumentsEval(func.children[1], data)
         let maxLen = 0
         const onlyNumbers = evaluatedArgs.every(n => { if (Array.isArray(n)) maxLen = Math.max(maxLen, n.length); return typeof n === 'number' })
-        if (onlyNumbers) return evaluatedArgs.reduce((prev, curr) => operation(prev as number, curr as number))
+        if (onlyNumbers) return evaluatedArgs.reduce((prev, curr) => operation(prev as number, curr as number), initial)
         const numbers = evaluatedArgs.map(a => {
             if (typeof a === 'number') return Array(maxLen).fill(a)
             return (a as DataType[]).filter(a => typeof a === 'number')
@@ -33,11 +33,11 @@ function evalulate(expression: Token, data: DataType): DataType {
         const zippedNumbers = numbers[0].map((_, idx) => numbers.map(num => num[idx]))
         return zippedNumbers.map(n => n.reduce((prev, curr) => operation(prev, curr)))
     }
-    const mathFunc = (func: Token, data: DataType, operation: (a: number, b: number) => number, name: string) => {
+    const mathFunc = (func: Token, data: DataType, operation: (a: number, b: number) => number, name: string, initial = 0) => {
         if (func.children.length > 1) {
-            return mathFuncAgainstArgs(func, data, operation, name)
+            return mathFuncAgainstArgs(func, data, operation, name, initial)
         } else {
-            return mathFuncAgainstData(data, operation, name)
+            return mathFuncAgainstData(data, operation, name, initial)
         }
     }
     const stringEval = (str: Token) => trimCitation(str.raw)
@@ -54,12 +54,12 @@ function evalulate(expression: Token, data: DataType): DataType {
                     if (!Array.isArray(data)) throw new Error(`Cant join none array data`)
                     let seperator: DataType = ' ';
                     if (func.children.length > 1 && func.children[1].children.length > 0) seperator = evalulate(func.children[1].children[0], structuredClone(data))
-                  
+
                     if (typeof seperator !== 'string') throw new Error("Cant join with none string seperator")
                     return data.filter(d => typeof d === 'string').join(seperator)
                 }
             case 'multiply':
-                return mathFunc(func, data, (a, b) => a * b, 'multiply')
+                return mathFunc(func, data, (a, b) => a * b, 'multiply',1)
             default:
                 throw new Error(`Function not implemented yet: ${func.children[0].raw}`)
         }

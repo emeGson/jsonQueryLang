@@ -210,7 +210,7 @@ roles.*
     "waiter"
 ]
 ```
-* If you prefer a string you can use the >join function
+* If you prefer a string you can use the >join function to join all entries in a array
 ```sh
 roles.*.>join
 ```
@@ -225,6 +225,13 @@ roles.*.>join(', ')
 #### Result
 ```json
 "chef, manager, owner, waiter"
+```
+* We can also do some simple math like add and multiply
+```sh
+>add(age, weight) 
+```
+```sh
+> 
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
