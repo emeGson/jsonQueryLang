@@ -412,11 +412,11 @@ try {
     })
 
     Deno.test('BetterTrim', () => {
-        assertEquals(trimCitation('"'), '')
-        assertEquals(trimCitation('"'), '')
-        assertEquals(trimCitation('"123'), '123')
-        assertEquals(trimCitation('"test"'), 'test')
-        assertEquals(trimCitation('""'), '')
+        assertEquals(trimCitation("'"), '')
+        assertEquals(trimCitation("'"), '')
+        assertEquals(trimCitation("'123'"), '123')
+        assertEquals(trimCitation("'test'"), 'test')
+        assertEquals(trimCitation("''"), '')
     })
 
     Deno.test(`intepret roles.*.>join(' ')`, () => {
