@@ -187,7 +187,7 @@ const WhiteSpace = (tokenizer: Tokenizer): Token | null => {
 
 const String = (tokenizer: Tokenizer): Token | null => {
     const mark = tokenizer.mark('String')
-    if (!StringLiteral(tokenizer, '"')) {
+    if (!StringLiteral(tokenizer, "'")) {
         tokenizer.reset(mark)
         return null
     }
@@ -195,12 +195,12 @@ const String = (tokenizer: Tokenizer): Token | null => {
     const res: Token[] = []
 
     const stringParser = (tok: Tokenizer) => Choice(tok, [
-        (t: Tokenizer) => StringLiteral(t, '\\"'),
+        (t: Tokenizer) => StringLiteral(t, "\\'"),
         Any
     ])
 
     let c = stringParser(tokenizer)
-    while (c !== null && !Array.isArray(c) && c.raw !== '"') {
+    while (c !== null && !Array.isArray(c) && c.raw !== "'") {
         res.push(c)
         c = stringParser(tokenizer)
     }
@@ -210,7 +210,7 @@ const String = (tokenizer: Tokenizer): Token | null => {
         return null
     }
 
-    return createToken(tokenizer, '"' + res.map(t => t.raw).join('') + '"', 'string')
+    return createToken(tokenizer, "'" + res.map(t => t.raw).join('') + "'", 'string')
 }
 
 const Identifier = (tokenizer: Tokenizer): Token | null => {
