@@ -286,7 +286,7 @@ This is very much a toy project and as such contributions are not merged. Feel h
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the MIT License. See [license](license.txt) for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
