@@ -226,12 +226,40 @@ roles.*.>join(', ')
 ```json
 "chef, manager, owner, waiter"
 ```
-* We can also do some simple math like add and multiply
+* We can also do some simple math like add and multiply. 
+  * When a math function isnt given any arguments it will aggregate on all numbers in the currrent list/object 
+  * If the arguments are all attributes it will be performed for each object on those attributes 
+  * If at least one of the arguments is a constant it will run against all attributes
+#### Example 1
 ```sh
 >add(age, weight) 
+
 ```
+#### Result
+```json
+[
+    88,
+    68
+]
+```
+#### Example 2
 ```sh
-> 
+age.>multiply
+```
+#### Result
+```json
+850
+```
+#### Example 3
+```sh
+>add(age, 10)
+```
+#### Result
+```json
+[
+    44,
+    35
+]
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -240,11 +268,11 @@ roles.*.>join(', ')
 
 <!-- ROADMAP -->
 ## Roadmap
-
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
+Features are going to be implemented as long as the project is fun! 😋
+- [ ] Subtract function
+- [ ] Extend join function to be able to only join selected attributes
+- [ ] Implement a filter syntax for lists and objects maybe the same maybe different
+- [ ] Add index support to lists
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
