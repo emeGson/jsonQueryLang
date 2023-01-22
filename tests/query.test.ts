@@ -52,15 +52,15 @@ try {
     })
 
     Deno.test('combinators string', () => {
-        assertEquals(String(createTokenizer('"hello"')), { raw: '"hello"', idx: 0, type: 'string', children: [] })
-        assertEquals(String(createTokenizer('"hell\\"o wo"rld')), { raw: '"hell\\"o wo"', idx: 0, type: 'string', children: [] })
+        assertEquals(String(createTokenizer(`'hello'`)), { raw: `'hello'`, idx: 0, type: 'string', children: [] })
+        assertEquals(String(createTokenizer(`'hell\\'o wo'rld`)), { raw: `'hell\\'o wo'`, idx: 0, type: 'string', children: [] })
         assertEquals(String(createTokenizer(' 234')), null)
-        assertEquals(String(createTokenizer('"hello')), null)
-        assertEquals(String(createTokenizer('h"ello"')), null)
+        assertEquals(String(createTokenizer(`'hello`)), null)
+        assertEquals(String(createTokenizer(`h'ello'`)), null)
     })
 
     Deno.test('combinators atom', () => {
-        assertEquals(Atom(createTokenizer('"hello"')), { raw: '"hello"', idx: 0, type: 'string', children: [] })
+        assertEquals(Atom(createTokenizer(`'hello'`)), { raw: `'hello'`, idx: 0, type: 'string', children: [] })
         assertEquals(Atom(createTokenizer('123')), { raw: '123', idx: 0, type: 'float', children: [] })
         assertEquals(Atom(createTokenizer('true')), { raw: 'true', idx: 0, type: 'boolean', children: [] })
     })
@@ -146,10 +146,10 @@ try {
             { raw: 'false', idx: 4, type: 'boolean', children: [] },
             { raw: 'true', idx: 9, type: 'boolean', children: [] }
         ])
-        assertEquals(SequenceOf(createTokenizer('"string"'), [
+        assertEquals(SequenceOf(createTokenizer(`'string'`), [
             (t) => Maybe(t, Boolean),
             (t) => Choice(t, [Int, String])
-        ]), [{ raw: '"string"', idx: 0, type: 'string', children: [] }])
+        ]), [{ raw: `'string'`, idx: 0, type: 'string', children: [] }])
         assertEquals(SequenceOf(createTokenizer('truefalse123'), [
             Boolean, Boolean, Boolean
         ]), null)
@@ -185,19 +185,19 @@ try {
                 ]
             }]
         })
-        assertEquals(FunctionArguments(createTokenizer('(arg1,"  ")')), {
-            type: 'arguments', raw: '(arg1,"  ")', idx: 0, children: [
+        assertEquals(FunctionArguments(createTokenizer(`(arg1,'  ')`)), {
+            type: 'arguments', raw: `(arg1,'  ')`, idx: 0, children: [
                 {
                     raw: 'arg1', idx: 1, type: 'expression', children: [
                         { type: 'identifier', raw: 'arg1', idx: 1, children: [] }
                     ]
                 },
-                { type: 'string', raw: '"  "', idx: 6, children: [] }
+                { type: 'string', raw: `'  '`, idx: 6, children: [] }
             ]
         })
         assertEquals(FunctionArguments(createTokenizer(' 234')), null)
-        assertEquals(FunctionArguments(createTokenizer('"hello')), null)
-        assertEquals(FunctionArguments(createTokenizer('h"ello"')), null)
+        assertEquals(FunctionArguments(createTokenizer(`'hello`)), null)
+        assertEquals(FunctionArguments(createTokenizer(`h'ello'`)), null)
     })
 
     Deno.test('combinators expression', () => {
@@ -311,15 +311,15 @@ try {
         })
     })
     Deno.test('test parsing function with argumment', () => {
-        assertEquals(parse('roles.>join(" ")'), {
-            type: 'expression', raw: 'roles.>join(" ")', idx: 0, children: [
+        assertEquals(parse(`roles.>join(' ')`), {
+            type: 'expression', raw: `roles.>join(' ')`, idx: 0, children: [
                 { type: 'identifier', raw: 'roles', idx: 0, children: [] },
                 {
-                    type: 'function', raw: '>join(" ")', idx: 6, children: [
+                    type: 'function', raw: `>join(' ')`, idx: 6, children: [
                         { type: 'identifier', raw: 'join', idx: 7, children: [] },
                         {
-                            type: 'arguments', raw: '(" ")', idx: 11, children: [
-                                { type: 'string', raw: '" "', idx: 12, children: [] }
+                            type: 'arguments', raw: `(' ')`, idx: 11, children: [
+                                { type: 'string', raw: `' '`, idx: 12, children: [] }
                             ]
                         }
                     ]
@@ -362,22 +362,22 @@ try {
     })
 
     Deno.test('test parsing function with multiple arguments where one arg is string with comma', () => {
-        assertEquals(parse('Account.Order.Product.>concat(Price,",").>join'), {
-            type: 'expression', raw: 'Account.Order.Product.>concat(Price,",").>join', idx: 0, children: [
+        assertEquals(parse(`Account.Order.Product.>concat(Price,',').>join`), {
+            type: 'expression', raw: `Account.Order.Product.>concat(Price,',').>join`, idx: 0, children: [
                 { type: 'identifier', raw: 'Account', idx: 0, children: [] },
                 { type: 'identifier', raw: 'Order', idx: 8, children: [] },
                 { type: 'identifier', raw: 'Product', idx: 14, children: [] },
                 {
-                    type: 'function', raw: '>concat(Price,",")', idx: 22, children: [
+                    type: 'function', raw: `>concat(Price,',')`, idx: 22, children: [
                         { type: 'identifier', raw: 'concat', idx: 23, children: [] },
                         {
-                            type: 'arguments', raw: '(Price,",")', idx: 29, children: [
+                            type: 'arguments', raw: `(Price,',')`, idx: 29, children: [
                                 {
                                     type: 'expression', raw: 'Price', idx: 30, children: [
                                         { type: 'identifier', raw: 'Price', idx: 30, children: [] }
                                     ]
                                 },
-                                { type: 'string', raw: '","', idx: 36, children: [] },
+                                { type: 'string', raw: `','`, idx: 36, children: [] },
                             ]
                         }
                     ]
@@ -419,8 +419,12 @@ try {
         assertEquals(trimCitation('""'), '')
     })
 
-    Deno.test('intepret roles.*.>join(" ")', () => {
-        assertEquals(interpret('roles.*.>join(" ")', text1), 'guest guest owner owner admin guest member owner guest admin guest owner member owner admin')
+    Deno.test(`intepret roles.*.>join(' ')`, () => {
+        assertEquals(interpret(`roles.*.>join(' ')`, text1), 'guest guest owner owner admin guest member owner guest admin guest owner member owner admin')
+    })
+
+    Deno.test(`intepret roles.*.>join(', ')`, () => {
+        assertEquals(interpret(`roles.*.>join(', ')`, text1), 'guest, guest, owner, owner, admin, guest, member, owner, guest, admin, guest, owner, member, owner, admin')
     })
 
     Deno.test('intepret Account', () => {
