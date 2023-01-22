@@ -105,6 +105,10 @@ or from compiled executable
 ```sh
 jsonQuery {json file} {query}
 ```
+but the easiest way is to use the built in playground
+```sh
+deno task playground
+```
 ### Example data
 To follow along copy the data to a local [json file](tests/example.json)
 ```json
