@@ -80,9 +80,23 @@ const Maybe = (tokenizer: Tokenizer, parser: Parser<unknown>): Token[] | Token =
 
 }
 
+const UnsignedInt = (tokenizer: Tokenizer): Token | null => {
+    const mark = tokenizer.mark('unsignedInt')
+    const res = OneOrMore(tokenizer, (t: Tokenizer) => { return AnyOfString(t, "0123456789") })
+    if (res === null) {
+        tokenizer.reset(mark)
+        return null
+    }
+    const raw = res.map(t => t.raw).join('')
+    return createToken(tokenizer, raw, 'unsignedInt')
+}
+
 const Int = (tokenizer: Tokenizer): Token | null => {
     const mark = tokenizer.mark('Int')
-    const res = OneOrMore(tokenizer, (t: Tokenizer) => { return AnyOfString(t, "0123456789") })
+    const res = SequenceOf(tokenizer, [
+        (t) => Maybe(t, (t) => StringLiteral(t, '-')),
+        UnsignedInt
+    ])
     if (res === null) {
         tokenizer.reset(mark)
         return null
@@ -100,7 +114,7 @@ const Float = (tokenizer: Tokenizer): Token | null => {
     }
     const decimal = SequenceOf(tokenizer, [
         (t: Tokenizer) => StringLiteral(t, '.'),
-        Int
+        UnsignedInt
     ])
 
     return createToken(tokenizer, real.raw + (Array.isArray(decimal) ? decimal : []).map(t => t.raw).join(''), 'float')
@@ -141,6 +155,34 @@ const Choice = (tokenizer: Tokenizer, parsers: Parser<unknown>[]): Token[] | Tok
     }
     tokenizer.reset(mark)
     return null
+}
+
+const Regex = (tokenizer: Tokenizer, regex: RegExp): Token | null => {
+    const mark = tokenizer.mark('Regex')
+    const c = tokenizer.next()
+    if (!c) {
+        tokenizer.reset(mark)
+        return null
+    }
+    if (!c.match(regex)) {
+        tokenizer.reset(mark)
+        return null
+    }
+
+    return createToken(tokenizer, c, 'regex')
+}
+
+const WhiteSpace = (tokenizer: Tokenizer): Token | null => {
+    const mark = tokenizer.mark('WhiteSpace')
+
+    const res = OneOrMore(tokenizer, (t) => Regex(t, /\s/))
+
+    if (!res) {
+        tokenizer.reset(mark)
+        return null
+    }
+
+    return createToken(tokenizer, res.map(r => r.raw).join(''), 'whitespace')
 }
 
 const String = (tokenizer: Tokenizer): Token | null => {
@@ -240,16 +282,21 @@ const FunctionArguments = (tokenizer: Tokenizer): Token | null => {
     const mark = tokenizer.mark('FunctionArguments')
     const res = SequenceOf(tokenizer, [
         (t) => StringLiteral(t, '('),
+        (t) => Maybe(t, WhiteSpace),
         (t) => Maybe(t,
             (t) => SequenceOf(t,
                 [
                     Argument,
                     (t) => ZeroOrMore(t,
                         (t) => SequenceOf(t, [
+                            (t) => Maybe(t,WhiteSpace),
                             (t) => StringLiteral(t, ','),
-                            Argument
+                            (t) => Maybe(t,WhiteSpace),
+                            Argument,
+                            (t) => Maybe(t,WhiteSpace),
                         ]))
                 ])),
+        (t) => Maybe(t, WhiteSpace),
         (t) => StringLiteral(t, ')')
     ])
 
@@ -266,6 +313,7 @@ const Function = (tokenizer: Tokenizer): Token | null => {
     const func = SequenceOf(tokenizer, [
         (t) => StringLiteral(t, '>'),
         Identifier,
+        (t) => Maybe(t, WhiteSpace),
         (t) => Maybe(t,
 
             FunctionArguments
@@ -282,23 +330,28 @@ const Function = (tokenizer: Tokenizer): Token | null => {
 const Expression = (tokenizer: Tokenizer): Token | null => {
     const mark = tokenizer.mark('Expression')
     const expression = SequenceOf(tokenizer, [
+        (t) => Maybe(t, WhiteSpace),
         (t) => Choice(t, [
             Identifier,
             Wildcard,
             Function
         ]),
+        (t) => Maybe(t, WhiteSpace),
         (t) => ZeroOrMore(t,
             (t) => SequenceOf(t,
                 [
                     (t) => StringLiteral(t, '.'),
+                    (t) => Maybe(t, WhiteSpace),
                     (t) => Choice(t,
                         [
                             Identifier,
                             Wildcard,
                             Function
-                        ])
+                        ]),
+                    (t) => Maybe(t, WhiteSpace),
                 ])
-        )
+        ),
+        (t) => Maybe(t, WhiteSpace),
     ])
 
     if (!expression) {
@@ -327,5 +380,7 @@ export {
     Choice,
     FunctionArguments,
     Expression,
-    Function
+    Function,
+    UnsignedInt,
+    WhiteSpace
 }

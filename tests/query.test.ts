@@ -1,6 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.172.0/testing/asserts.ts"
 import { interpret } from "../src/intepreter.ts"
-import { Identifier, ZeroOrMore, Boolean, String, StringLiteral, Int, Float, Atom, Maybe, SequenceOf, FunctionArguments, Choice, parse, Expression, Function } from "../src/parser.ts"
+import { Identifier, ZeroOrMore, Boolean, String, StringLiteral, Int, Float, Atom, Maybe, SequenceOf, FunctionArguments, Choice, parse, Expression, Function, UnsignedInt, WhiteSpace } from "../src/parser.ts"
 import { createTokenizer } from "../src/tokenizer.ts"
 import { trimCitation } from "../src/util.ts"
 
@@ -9,10 +9,27 @@ try {
     const text2 = await Deno.readTextFile('./tests/test2.json')
     const text3 = await Deno.readTextFile('./tests/test3.json')
 
+    Deno.test('combinators whitespace', () => {
+        assertEquals(WhiteSpace(createTokenizer(' ')), { raw: ' ', idx: 0, type: 'whitespace', children: [] })
+        assertEquals(WhiteSpace(createTokenizer('   ')), { raw: '   ', idx: 0, type: 'whitespace', children: [] })
+        assertEquals(WhiteSpace(createTokenizer(' 234')), { raw: ' ', idx: 0, type: 'whitespace', children: [] })
+        assertEquals(WhiteSpace(createTokenizer('234  ')), null)
+        assertEquals(WhiteSpace(createTokenizer(`
+        `)), { raw: `
+        `, idx: 0, type: 'whitespace', children: [] })
+    })
 
-    Deno.test('combinators int', () => {
+    Deno.test('combinators unsinged int', () => {
+        assertEquals(UnsignedInt(createTokenizer('234')), { raw: '234', idx: 0, type: 'unsignedInt', children: [] })
+        assertEquals(UnsignedInt(createTokenizer('-2323789347893292374924')), null)
+        assertEquals(UnsignedInt(createTokenizer(' 234')), null)
+        assertEquals(UnsignedInt(createTokenizer('ssasd')), null)
+        assertEquals(UnsignedInt(createTokenizer('234 ,true')), { raw: '234', idx: 0, type: 'unsignedInt', children: [] })
+    })
+
+    Deno.test('combinators  int', () => {
         assertEquals(Int(createTokenizer('234')), { raw: '234', idx: 0, type: 'int', children: [] })
-        assertEquals(Int(createTokenizer('2323789347893292374924')), { raw: '2323789347893292374924', idx: 0, type: 'int', children: [] })
+        assertEquals(Int(createTokenizer('-2323789347893292374924')), { raw: '-2323789347893292374924', idx: 0, type: 'int', children: [] })
         assertEquals(Int(createTokenizer(' 234')), null)
         assertEquals(Int(createTokenizer('ssasd')), null)
         assertEquals(Int(createTokenizer('234 ,true')), { raw: '234', idx: 0, type: 'int', children: [] })
@@ -23,7 +40,8 @@ try {
         assertEquals(Float(createTokenizer('2323789347893292374924')), { raw: '2323789347893292374924', idx: 0, type: 'float', children: [] })
         assertEquals(Float(createTokenizer(' 234')), null)
         assertEquals(Float(createTokenizer('ssasd')), null)
-        assertEquals(Float(createTokenizer('234.23323 ')), { raw: '234.23323', idx: 0, type: 'float', children: [] })
+        assertEquals(Float(createTokenizer('-234.23323 ')), { raw: '-234.23323', idx: 0, type: 'float', children: [] })
+        assertEquals(Float(createTokenizer('234.-23323 ')), { raw: '234', idx: 0, type: 'float', children: [] })
     })
 
     Deno.test('combinators string literal', () => {
@@ -185,7 +203,7 @@ try {
     Deno.test('combinators expression', () => {
         assertEquals(Expression(createTokenizer('location')), { raw: 'location', idx: 0, type: 'expression', children: [{ raw: 'location', idx: 0, type: 'identifier', children: [] }] })
         assertEquals(Expression(createTokenizer('location.lat')), { raw: 'location.lat', idx: 0, type: 'expression', children: [{ raw: 'location', idx: 0, type: 'identifier', children: [] }, { raw: 'lat', idx: 9, type: 'identifier', children: [] }] })
-        assertEquals(Expression(createTokenizer('  dsadsa')), null)
+        assertEquals(Expression(createTokenizer('  dsadsa')), { raw: '  dsadsa', idx: 0, type: 'expression', children: [{ raw: 'dsadsa', idx: 2, type: 'identifier', children: [] }] })
         assertEquals(Expression(createTokenizer('"d,trueassds')), null)
         assertEquals(Expression(createTokenizer('12121')), null)
         assertEquals(Expression(createTokenizer('*')), {
@@ -439,6 +457,37 @@ try {
 
     Deno.test('intepret >add(10,20)', () => {
         assertEquals(interpret('>add(10,20)', text2), 30)
+    })
+
+    Deno.test('test removing of whitespace', () => {
+        assertEquals(parse(`  Account   .       Order  .*  .
+        Product . * . >multiply     (   Price
+            , Quantity   )
+        .
+        >add  `), {type: 'expression', raw: `  Account   .       Order  .*  .
+        Product . * . >multiply     (   Price
+            , Quantity   )
+        .
+        >add  `, idx: 0, children: [
+            {type: 'identifier', raw: 'Account', idx: 2,children: []},
+            {type: 'identifier', raw: 'Order', idx: 20,children: []},
+            {type: 'wildcard', raw: '*', idx: 28,children: []},
+            {type: 'identifier', raw: 'Product', idx: 41,children: []},
+            {type: 'wildcard', raw: '*', idx: 51,children: []},
+            {type: 'function', raw: `>multiply     (   Price
+            , Quantity   )`, idx: 55,children: [
+                    {type: 'identifier', raw: 'multiply', idx: 56,children: []},
+                    {type: 'arguments', raw: `(   Price
+            , Quantity   )`, idx:69, children: [
+                            {type: 'expression', raw: `Price
+            `, idx: 73, children: [{type: 'identifier', raw: 'Price', idx: 73,children: []}]},
+                            {type: 'expression', raw: 'Quantity   ', idx: 93, children: [{type: 'identifier', raw: 'Quantity', idx: 93,children: []}]}
+                            ]}
+                ]},
+            {type: 'function', raw: '>add  ', idx: 124,children: [
+                {type: 'identifier', raw: 'add', idx: 125,children: []}
+            ]}
+        ]})
     })
 } catch (e) {
     console.error(e)
