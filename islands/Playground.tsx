@@ -1,27 +1,27 @@
 import { useState } from "preact/hooks";
 import exampleData from "../tests/example.json" assert { type: "json" };
 import { interpret } from "../src/intepreter.ts";
-import { DataType } from "../src/types.ts";
+
 export default function Playground() {
   const [query, setQuery] = useState("");
-  const [json, setJson] = useState(JSON.stringify(exampleData, undefined,4));
+  const [json, setJson] = useState(JSON.stringify(exampleData, undefined, 4));
 
-  let resData = ""
-  let errText = ""
+  let resData = "";
+  let errText = "";
   try {
-    const {val, err} = interpret(query, json);
-    resData = JSON.stringify(val,undefined, 4)
-    errText = err ?? ""
+    const { val, err } = interpret(query, json);
+    resData = JSON.stringify(val, undefined, 4);
+    errText = err ?? "";
   } catch (e) {
     //testing
   }
 
   const handleQueryChange = (event: any) => {
-    console.log('query updated')
+    console.log("query updated");
     setQuery(event.target.value);
   };
   const handleJsonChange = (event: any) => {
-    console.log('json updated')
+    console.log("json updated");
     setJson(event.target.value);
   };
   return (
@@ -33,7 +33,7 @@ export default function Playground() {
           value={query}
           onInput={handleQueryChange}
         />
-        {errText.length !== 0 && query.length !== 0 ? <div>{errText}</div> : ''}
+        {errText.length !== 0 && query.length !== 0 ? <div>{errText}</div> : ""}
       </div>
       <div class=" flex flex-row flex-grow">
         <textarea

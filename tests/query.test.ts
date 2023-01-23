@@ -20,7 +20,10 @@ import {
   ZeroOrMore,
 } from "../src/parser.ts";
 import { createTokenizer } from "../src/tokenizer.ts";
+import { DataType } from "../src/types.ts";
 import { trimCitation } from "../src/util.ts";
+
+const makeRes = (d:DataType) => {return {val:d,err:null}}
 
 try {
   const text1 = await Deno.readTextFile("./tests/test.json");
@@ -730,15 +733,15 @@ try {
   });
 
   Deno.test("intepret minimum", () => {
-    assertEquals(interpret("name", text3), "Copeland Rogers");
+    assertEquals(interpret("name", text3), makeRes("Copeland Rogers"));
   });
 
   Deno.test("intepret minimum chaining", () => {
-    assertEquals(interpret("location.lat", text3), 68.279554);
+    assertEquals(interpret("location.lat", text3), makeRes(68.279554));
   });
 
   Deno.test("intepret profile.location.lat", () => {
-    assertEquals(interpret("profile.location.lat", text1), [
+    assertEquals(interpret("profile.location.lat", text1), makeRes([
       68.279554,
       80.520788,
       36.387318,
@@ -748,11 +751,11 @@ try {
       -5.886025,
       -24.504043,
       20.122613,
-    ]);
+    ]));
   });
 
   Deno.test("intepret profile.nestedList", () => {
-    assertEquals(interpret("profile.nestedList", text1), [
+    assertEquals(interpret("profile.nestedList", text1), makeRes([
       [26, 52, 43, 22, 78, 84, 72, 11, 62],
       [37, 79, 3, 26, 71, 20],
       [53, 30, 66, 67, 16],
@@ -762,11 +765,11 @@ try {
       [94, 47, 19, 19, 79],
       [98, 87, 82, 43, 68, 41, 33, 99, 34, 45],
       [82, 43, 33, 27, 46, 60, 35, 76],
-    ]);
+    ]));
   });
 
   Deno.test("intepret profile.nestedList.*.>add", () => {
-    assertEquals(interpret("profile.nestedList.*.>add", text1), 3814);
+    assertEquals(interpret("profile.nestedList.*.>add", text1), makeRes(3814));
   });
 
   Deno.test("BetterTrim", () => {
@@ -780,19 +783,19 @@ try {
   Deno.test(`intepret roles.*.>join(' ')`, () => {
     assertEquals(
       interpret(`roles.*.>join(' ')`, text1),
-      "guest guest owner owner admin guest member owner guest admin guest owner member owner admin",
+      makeRes("guest guest owner owner admin guest member owner guest admin guest owner member owner admin"),
     );
   });
 
   Deno.test(`intepret roles.*.>join(', ')`, () => {
     assertEquals(
       interpret(`roles.*.>join(', ')`, text1),
-      "guest, guest, owner, owner, admin, guest, member, owner, guest, admin, guest, owner, member, owner, admin",
+      makeRes("guest, guest, owner, owner, admin, guest, member, owner, guest, admin, guest, owner, member, owner, admin"),
     );
   });
 
   Deno.test("intepret Account", () => {
-    assertEquals(interpret("Account", text2), {
+    assertEquals(interpret("Account", text2), makeRes({
       "Account Name": "Firefly",
       "Order": [{
         "OrderID": "order103",
@@ -853,11 +856,11 @@ try {
           "Quantity": 1,
         }],
       }],
-    });
+    }));
   });
 
   Deno.test("intepret Account.Order", () => {
-    assertEquals(interpret("Account.Order", text2), [{
+    assertEquals(interpret("Account.Order", text2), makeRes([{
       "OrderID": "order103",
       "Product": [{
         "Product Name": "Bowler Hat",
@@ -915,11 +918,11 @@ try {
         "Price": 107.99,
         "Quantity": 1,
       }],
-    }]);
+    }]));
   });
 
   Deno.test("intepret Account.Order.Product", () => {
-    assertEquals(interpret("Account.Order.Product", text2), [[{
+    assertEquals(interpret("Account.Order.Product", text2), makeRes([[{
       "Product Name": "Bowler Hat",
       "ProductID": 858383,
       "SKU": "0406654608",
@@ -971,11 +974,11 @@ try {
       },
       "Price": 107.99,
       "Quantity": 1,
-    }]]);
+    }]]));
   });
 
   Deno.test("intepret Account.Order.Product.*", () => {
-    assertEquals(interpret("Account.Order.*.Product.*", text2), [{
+    assertEquals(interpret("Account.Order.*.Product.*", text2), makeRes([{
       "Product Name": "Bowler Hat",
       "ProductID": 858383,
       "SKU": "0406654608",
@@ -1027,13 +1030,13 @@ try {
       },
       "Price": 107.99,
       "Quantity": 1,
-    }]);
+    }]));
   });
 
   Deno.test("intepret Account.Order.Product.*.>multiply(Price,Quantity)", () => {
     assertEquals(
       interpret("Account.Order.*.Product.*.>multiply(Price,Quantity)", text2),
-      [68.9, 21.67, 137.8, 107.99],
+      makeRes([68.9, 21.67, 137.8, 107.99]),
     );
   });
 
@@ -1043,28 +1046,28 @@ try {
         "Account.Order.*.Product.*.>multiply(Price,Quantity).>add",
         text2,
       ),
-      336.36,
+      makeRes(336.36),
     );
   });
 
   Deno.test("intepret Account.Order.Product.*.>add(Price,Quantity).>add", () => {
     assertEquals(
       interpret("Account.Order.*.Product.*.>add(Price,Quantity).>add", text2),
-      206.56,
+      makeRes(206.56),
     );
   });
 
   Deno.test("intepret Account.Order.Product.*.>add(Price,50)", () => {
-    assertEquals(interpret("Account.Order.*.Product.*.>add(Price,50)", text2), [
+    assertEquals(interpret("Account.Order.*.Product.*.>add(Price,50)", text2), makeRes([
       84.45,
       71.67,
       84.45,
       157.99,
-    ]);
+    ]));
   });
 
   Deno.test("intepret >add(10,20)", () => {
-    assertEquals(interpret(">add(10,20)", text2), 30);
+    assertEquals(interpret(">add(10,20)", text2), makeRes(30));
   });
 
   Deno.test("test removing of whitespace", () => {

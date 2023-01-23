@@ -6,6 +6,8 @@ export default function Home() {
     <>
       <Head>
         <title>Json Query Playground</title>
+        <link href="themes/prism.css" rel="stylesheet" />
+        <script src="prism.js"></script>
       </Head>
       <Playground />
     </>

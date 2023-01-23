@@ -6,7 +6,12 @@ async function run() {
   }
   const data = await Deno.readTextFile(Deno.args[0]);
   const input = Deno.args[1];
-  console.log(JSON.stringify(interpret(input, data), undefined, 4));
+  const { val, err } = interpret(input, data);
+  if (err !== null) {
+    console.error(err);
+    return;
+  }
+  console.log(JSON.stringify(val, undefined, 4));
 }
 
 if (import.meta.main) {
