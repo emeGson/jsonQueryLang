@@ -1,5 +1,7 @@
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+
 <a name="readme-top"></a>
+
 <!-- PROJECT SHIELDS -->
 <!--
 *** I'm using markdown "reference style" links for readability.
@@ -14,7 +16,7 @@
 
 <h3 align="center">Json Query Language</h3>
 
-  <p align="center">
+<p align="center">
     A simple toy language to query json files
     <br />
     <!-- <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
@@ -27,8 +29,6 @@
     <a href="https://github.com/github_username/repo_name/issues">Request Feature</a> -->
   </p>
 </div>
-
-
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -56,245 +56,304 @@
   </ol>
 </details>
 
-
-
 <!-- ABOUT THE PROJECT -->
+
 ## About The Project
 
 <!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
 
-A simple query language for json inspired by jsonata. This is a toy language i created for my own enjoyment and as such should not be used for anything important
+A simple query language for json inspired by jsonata. This is a toy language i
+created for my own enjoyment and as such should not be used for anything
+important
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ### Built With
 
-* [![Deno][deno.land]][Deno-url]
+- [![Deno][deno.land]][Deno-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- GETTING STARTED -->
+
 ## Getting Started
 
 ### Prerequisites
 
-* Deno
+- Deno
 
 ### Compile (optional)
+
 You can run the project directly form deno or compile it to a native executable
+
 ```sh
 deno task compile
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- USAGE EXAMPLES -->
+
 ## Usage
+
 ### Run
-Commands can be run either from deno 
+
+Commands can be run either from deno
+
 ```sh
 deno run --allow-read .\src\query.ts {json file} {query}
 ```
+
 or from compiled executable
+
 ```sh
 jsonQuery {json file} {query}
 ```
+
 but the easiest way is to use the built in playground
+
 ```sh
 deno task playground
 ```
+
 ### Example data
+
 To follow along copy the data to a local [json file](tests/example.json)
+
 ```json
 [
-    {
-        "name": "Bob",
-        "age": 34,
-        "weight": 54,
-        "salary": 20000,
-        "roles": [
-            "chef",
-            "manager"
-        ],
-        "children": [
-            {
-                "name": "Bob jr",
-                "age": 6
-            },
-            {
-                "name": "Bobina jr",
-                "age": 10
-            }
-        ],
-        "education":{
-            "school": "nice school",
-            "level": "phd"
-        }
-    },
-    {
-        "name": "Alice",
-        "age": 25,
-        "weight": 43,
-        "salary": 25000,
-        "roles": [
-            "owner",
-            "waiter"
-        ],
-        "children": [
-            {
-                "name": "Alice the small",
-                "age": 3
-            }
-        ],
-        "education":{
-            "school": "even nicer school",
-            "level": "candidate",
-            "years": 5
-        }
+  {
+    "name": "Bob",
+    "age": 34,
+    "weight": 54,
+    "salary": 20000,
+    "roles": [
+      "chef",
+      "manager"
+    ],
+    "children": [
+      {
+        "name": "Bob jr",
+        "age": 6
+      },
+      {
+        "name": "Bobina jr",
+        "age": 10
+      }
+    ],
+    "education": {
+      "school": "nice school",
+      "level": "phd"
     }
+  },
+  {
+    "name": "Alice",
+    "age": 25,
+    "weight": 43,
+    "salary": 25000,
+    "roles": [
+      "owner",
+      "waiter"
+    ],
+    "children": [
+      {
+        "name": "Alice the small",
+        "age": 3
+      }
+    ],
+    "education": {
+      "school": "even nicer school",
+      "level": "candidate",
+      "years": 5
+    }
+  }
 ]
 ```
+
 ### Queries
-* Get name of all employees 
+
+- Get name of all employees
+
 ```sh
 name
 ```
+
 #### Result
+
 ```json
-[  
-    "Bob",
-    "Alice"
+[
+  "Bob",
+  "Alice"
 ]
 ```
-* We can do the same with all the other fields 😊
+
+- We can do the same with all the other fields 😊
+
 ```sh
 education
 ```
+
 #### Result
+
 ```json
 [
-    {
-        "school": "nice school",
-        "level": "phd"
-    },
-    {
-        "school": "even nicer school",
-        "level": "candidate",
-        "years": 5
-    }
+  {
+    "school": "nice school",
+    "level": "phd"
+  },
+  {
+    "school": "even nicer school",
+    "level": "candidate",
+    "years": 5
+  }
 ]
 ```
-* To get nested fields just add a '.'
+
+- To get nested fields just add a '.'
+
 ```sh
 education.school
 ```
+
 #### Result
+
 ```json
 [
-    "nice school",
-    "even nicer school"
+  "nice school",
+  "even nicer school"
 ]
 ```
-* If we want to get all roles in a list we can use '*' to flatten a result
+
+- If we want to get all roles in a list we can use '*' to flatten a result
+
 ```sh
 roles.*
 ```
+
 #### Result
+
 ```json
 [
-    "chef",
-    "manager",
-    "owner",
-    "waiter"
+  "chef",
+  "manager",
+  "owner",
+  "waiter"
 ]
 ```
-* If you prefer a string you can use the >join function to join all entries in a array
+
+- If you prefer a string you can use the >join function to join all entries in a
+  array
+
 ```sh
 roles.*.>join
 ```
+
 #### Result
+
 ```json
 "chef manager owner waiter"
 ```
-* By default join uses ' ' as a seperator if you prefer something else just pass it in
+
+- By default join uses ' ' as a seperator if you prefer something else just pass
+  it in
+
 ```sh
 roles.*.>join(', ')
 ```
+
 #### Result
+
 ```json
 "chef, manager, owner, waiter"
 ```
-* We can also do some simple math like add and multiply. 
-  * When a math function isnt given any arguments it will aggregate on all numbers in the currrent list/object 
-  * If the arguments are all attributes it will be performed for each object on those attributes 
-  * If at least one of the arguments is a constant it will run against all attributes
-#### Example 1
-```sh
->add(age, weight) 
 
+- We can also do some simple math like add and multiply.
+  - When a math function isnt given any arguments it will aggregate on all
+    numbers in the currrent list/object
+  - If the arguments are all attributes it will be performed for each object on
+    those attributes
+  - If at least one of the arguments is a constant it will run against all
+    attributes
+
+#### Example 1
+
+```sh
+>add(age, weight)
 ```
+
 #### Result
+
 ```json
 [
-    88,
-    68
+  88,
+  68
 ]
 ```
+
 #### Example 2
+
 ```sh
 age.>multiply
 ```
+
 #### Result
+
 ```json
 850
 ```
+
 #### Example 3
+
 ```sh
 >add(age, 10)
 ```
+
 #### Result
+
 ```json
 [
-    44,
-    35
+  44,
+  35
 ]
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- ROADMAP -->
+
 ## Roadmap
+
 Features are going to be implemented as long as the project is fun! 😋
+
 - [ ] Subtract function
 - [ ] Extend join function to be able to only join selected attributes
-- [ ] Implement a filter syntax for lists and objects maybe the same maybe different
+- [ ] Implement a filter syntax for lists and objects maybe the same maybe
+      different
 - [ ] Add index support to lists
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
+
 ## Contributing
 
-This is very much a toy project and as such contributions are not merged. Feel hovewer free to fork if you like me have the weird urge to experiment with toy languages 🥰.
+This is very much a toy project and as such contributions are not merged. Feel
+hovewer free to fork if you like me have the weird urge to experiment with toy
+languages 🥰.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- LICENSE -->
+
 ## License
 
-Distributed under the MIT License. See [license](license.txt) for more information.
+Distributed under the MIT License. See [license](license.txt) for more
+information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
 [Deno-url]: https://deno.land/
 [Deno.land]: https://img.shields.io/badge/deno%20js-000000?style=for-the-badge&logo=deno&logoColor=white

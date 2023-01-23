@@ -1,19 +1,19 @@
 {
-    "tasks": {
-        "playground": "deno run -A dev.ts",
-        "playground:dev": "deno run -A --watch=static/,routes/ dev.ts",
-        "test": "deno test --allow-read",
-        "test:watch": "deno test --allow-read --watch  .\\tests\\",
-        "compile": "deno compile --allow-read --output jsonQuery .\\src\\query.ts"
-    },
-    "importMap": "./import_map.json",
-    "test": {
-        "files": {
-            "include": ["tests/query.test.ts"]
-        }
-    },
-    "compilerOptions": {
-        "jsx": "react-jsx",
-        "jsxImportSource": "preact"
-      }
+  "tasks": {
+    "playground": "deno run -A dev.ts",
+    "playground:dev": "deno run -A --watch=static/,routes/ dev.ts",
+    "test": "deno test --allow-read",
+    "test:watch": "deno test --allow-read --watch  .\\tests\\",
+    "compile": "deno compile --allow-read --output jsonQuery .\\src\\query.ts"
+  },
+  "importMap": "./import_map.json",
+  "test": {
+    "files": {
+      "include": ["tests/query.test.ts"]
+    }
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
+  }
 }

@@ -1,22 +1,22 @@
 {
-    "name": "Copeland Rogers",
-    "company": "Steelfab",
-    "dob": "1988-04-24",
-    "address": "32 Rutherford Place, Brazos, Maryland",
-    "location": {
-      "lat": 68.279554,
-      "long": 99.513636
-    },
-    "about": "Officia ad qui do pariatur excepteur laborum. Ipsum tempor aliquip id anim voluptate.",
-    "nestedList": [
-      26,
-      52,
-      43,
-      22,
-      78,
-      84,
-      72,
-      11,
-      62
-    ]
-  }
+  "name": "Copeland Rogers",
+  "company": "Steelfab",
+  "dob": "1988-04-24",
+  "address": "32 Rutherford Place, Brazos, Maryland",
+  "location": {
+    "lat": 68.279554,
+    "long": 99.513636
+  },
+  "about": "Officia ad qui do pariatur excepteur laborum. Ipsum tempor aliquip id anim voluptate.",
+  "nestedList": [
+    26,
+    52,
+    43,
+    22,
+    78,
+    84,
+    72,
+    11,
+    62
+  ]
+}
