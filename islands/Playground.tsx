@@ -4,19 +4,24 @@ import { interpret } from "../src/intepreter.ts";
 import { DataType } from "../src/types.ts";
 export default function Playground() {
   const [query, setQuery] = useState("");
-  const [json, setJson] = useState(JSON.stringify(exampleData));
+  const [json, setJson] = useState(JSON.stringify(exampleData, undefined,4));
 
-  let res: DataType = "";
+  let resData = ""
+  let errText = ""
   try {
-    res = interpret(query, json);
+    const {val, err} = interpret(query, json);
+    resData = JSON.stringify(val,undefined, 4)
+    errText = err ?? ""
   } catch (e) {
-    console.error(e);
+    //testing
   }
 
   const handleQueryChange = (event: any) => {
+    console.log('query updated')
     setQuery(event.target.value);
   };
   const handleJsonChange = (event: any) => {
+    console.log('json updated')
     setJson(event.target.value);
   };
   return (
@@ -28,18 +33,19 @@ export default function Playground() {
           value={query}
           onInput={handleQueryChange}
         />
+        {errText.length !== 0 && query.length !== 0 ? <div>{errText}</div> : ''}
       </div>
       <div class=" flex flex-row flex-grow">
         <textarea
           spellcheck={false}
           class="w-1/2 border-r-2 resize-none overflow-auto"
-          value={JSON.stringify(exampleData)}
+          value={json}
           onInput={handleJsonChange}
         >
         </textarea>
         <pre class="overflow-auto w-1/2">
           <code>
-            {JSON.stringify(res,undefined,4)}
+            {resData}
           </code>
         </pre>
       </div>

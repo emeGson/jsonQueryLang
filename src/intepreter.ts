@@ -2,12 +2,17 @@ import { parse } from "./parser.ts";
 import { DataType, Obj, Token } from "./types.ts";
 import { trimCitation } from "./util.ts";
 
-function interpret(exp: string, data: string): DataType {
+function interpret(exp: string, data: string): {val: DataType, err: string | null} {
   const parsed = parse(exp);
-  if (!parsed) throw new Error("Syntax error");
-  const parsedData = JSON.parse(data);
+  if (!parsed)return {val: "", err: "Unable to parse query"}
+  let parsedData = ""
+  try{
+    parsedData = JSON.parse(data);
+  }catch(_){
+    return {val: null,err: "Unable to parse json"}
+  }
   const res = evalulate(parsed, parsedData);
-  return res;
+  return {val: res, err: null};
 }
 
 function evalulate(expression: Token, data: DataType): DataType {
